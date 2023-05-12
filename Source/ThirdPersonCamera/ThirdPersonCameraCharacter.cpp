@@ -1,39 +1,32 @@
 #include "ThirdPersonCameraCharacter.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
+#include "TPCCharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Camera/HoatCameraSpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
-#include "Camera/HoatCameraSpringArmComponent.h"
+#include "InputAction.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "Net/UnrealNetwork.h"
 
-//////////////////////////////////////////////////////////////////////////
-// AThirdPersonCameraCharacter
+DEFINE_LOG_CATEGORY_STATIC(LogCharacter, Log, All);
 
-AThirdPersonCameraCharacter::AThirdPersonCameraCharacter()
+AThirdPersonCameraCharacter::AThirdPersonCameraCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UTPCCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	// set our turn rates for input
-	BaseTurnRate = 45.f;
-	BaseLookUpRate = 45.f;
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
-	GetCharacterMovement()->JumpZVelocity = 600.f;
-	GetCharacterMovement()->AirControl = 0.2f;
-
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<UHoatCameraSpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
+	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create a follow camera
@@ -57,95 +50,167 @@ void AThirdPersonCameraCharacter::SetCurrentCameraModificationVolume(AHoatCamera
 
 bool AThirdPersonCameraCharacter::GotMovementInput() const
 {
-	return bGotForwardInput || bGotRightInput;
+	return !GetPendingMovementInputVector().IsZero();
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Input
+USpringArmComponent* AThirdPersonCameraCharacter::GetCameraBoom() const
+{
+	return CameraBoom;
+}
+
+UCameraComponent* AThirdPersonCameraCharacter::GetFollowCamera() const
+{
+	return FollowCamera;
+}
+
+void AThirdPersonCameraCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(AThirdPersonCameraCharacter, bIsSprinting, COND_SimulatedOnly);
+}
 
 void AThirdPersonCameraCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &AThirdPersonCameraCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AThirdPersonCameraCharacter::MoveRight);
-
-	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
-	// "turn" handles devices that provide an absolute delta, such as a mouse.
-	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &AThirdPersonCameraCharacter::TurnAtRate);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &AThirdPersonCameraCharacter::LookUpAtRate);
-
-	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &AThirdPersonCameraCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &AThirdPersonCameraCharacter::TouchStopped);
-
-	// VR headset functionality
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AThirdPersonCameraCharacter::OnResetVR);
-}
-
-
-void AThirdPersonCameraCharacter::OnResetVR()
-{
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
-}
-
-void AThirdPersonCameraCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
-{
-		Jump();
-}
-
-void AThirdPersonCameraCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
-{
-		StopJumping();
-}
-
-void AThirdPersonCameraCharacter::TurnAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
-}
-
-void AThirdPersonCameraCharacter::LookUpAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
-}
-
-void AThirdPersonCameraCharacter::MoveForward(float Value)
-{
-	bGotForwardInput = (Controller != NULL) && (Value != 0.0f);
-
-	if (bGotForwardInput)
+	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		//Moving
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThirdPersonCameraCharacter::Move);
 
-		// get forward vector
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		AddMovementInput(Direction, Value);
+		//Looking
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPersonCameraCharacter::Look);
+
+		//Jumping
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+
+		//Sprinting
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Triggered, this, &AThirdPersonCameraCharacter::Sprint);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AThirdPersonCameraCharacter::StopSprinting);
+
+		//Crouching (cannot bind ACharacter::Crounch/UnCrouch directly has they take a parameter)
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Triggered, this, &AThirdPersonCameraCharacter::RequestCrouch);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AThirdPersonCameraCharacter::RequestUnCrouch);
+
+		// Set up input mappings
+		check(Controller);
+		if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+		{
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+			{
+				// Clear out existing mapping, and add our mapping
+				Subsystem->ClearAllMappings();
+				Subsystem->AddMappingContext(DefaultMappingContext, 0);
+			}
+		}
 	}
 }
 
-void AThirdPersonCameraCharacter::MoveRight(float Value)
+void AThirdPersonCameraCharacter::Move(const FInputActionValue& Value)
 {
-	bGotRightInput = (Controller != NULL) && (Value != 0.0f);
-
-	if (bGotRightInput)
+	if (Controller != nullptr)
 	{
-		// find out which way is right
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-	
-		// get right vector 
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		// add movement in that direction
-		AddMovementInput(Direction, Value);
+		const FVector2D MoveValue = Value.Get<FVector2D>();
+		const FRotator MovementRotation(0, Controller->GetControlRotation().Yaw, 0);
+
+		// Forward/Backward direction
+		if (MoveValue.Y != 0.f)
+		{
+			// Get forward vector
+			const FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
+
+			AddMovementInput(Direction, MoveValue.Y);
+		}
+
+		// Right/Left direction
+		if (MoveValue.X != 0.f)
+		{
+			// Get right vector
+			const FVector Direction = MovementRotation.RotateVector(FVector::RightVector);
+
+			AddMovementInput(Direction, MoveValue.X);
+		}
 	}
+}
+
+void AThirdPersonCameraCharacter::Look(const FInputActionValue& Value)
+{
+	if (Controller != nullptr)
+	{
+		const FVector2D LookValue = Value.Get<FVector2D>();
+
+		if (LookValue.X != 0.f)
+		{
+			AddControllerYawInput(LookValue.X);
+		}
+
+		if (LookValue.Y != 0.f)
+		{
+			AddControllerPitchInput(LookValue.Y);
+		}
+	}
+}
+
+bool AThirdPersonCameraCharacter::CanSprint() const
+{
+	if (UTPCCharacterMovementComponent* TPCCharacterMovement = Cast<UTPCCharacterMovementComponent>(GetCharacterMovement()))
+	{
+		return !bIsSprinting && TPCCharacterMovement && TPCCharacterMovement->CanEverSprint() && GetRootComponent() && !GetRootComponent()->IsSimulatingPhysics();
+	}
+
+	return false;
+}
+
+void AThirdPersonCameraCharacter::OnRep_IsSprinting()
+{
+	if (UTPCCharacterMovementComponent* TPCCharacterMovement = Cast<UTPCCharacterMovementComponent>(GetCharacterMovement()))
+	{
+		if (bIsSprinting)
+		{
+			TPCCharacterMovement->bWantsToSprint = true;
+		}
+		else
+		{
+			TPCCharacterMovement->bWantsToSprint = false;
+		}
+
+		TPCCharacterMovement->bNetworkUpdateReceived = true;
+	}
+}
+
+void AThirdPersonCameraCharacter::Sprint()
+{
+	if (UTPCCharacterMovementComponent* TPCCharacterMovement = Cast<UTPCCharacterMovementComponent>(GetCharacterMovement()))
+	{
+		if (CanSprint())
+		{
+			TPCCharacterMovement->bWantsToSprint = true;
+		}
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+		else if (!TPCCharacterMovement->CanEverSprint())
+		{
+			UE_LOG(LogCharacter, Log, TEXT("%s is trying to sprint, but sprinting is disabled on this character! (check TPCCharacterMovementComponent bCanSprint)"), *GetName());
+		}
+#endif
+	}
+}
+
+void AThirdPersonCameraCharacter::StopSprinting()
+{
+	if (UTPCCharacterMovementComponent* TPCCharacterMovement = Cast<UTPCCharacterMovementComponent>(GetCharacterMovement()))
+	{
+		TPCCharacterMovement->bWantsToSprint = false;
+	}
+}
+
+void AThirdPersonCameraCharacter::RequestCrouch()
+{
+	Crouch();
+}
+
+void AThirdPersonCameraCharacter::RequestUnCrouch()
+{
+	UnCrouch();
 }

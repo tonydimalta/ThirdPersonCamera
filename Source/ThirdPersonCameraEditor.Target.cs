@@ -7,5 +7,7 @@ public class ThirdPersonCameraEditorTarget : TargetRules
 	{
 		Type = TargetType.Editor;
 		ExtraModuleNames.Add("ThirdPersonCamera");
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+		DefaultBuildSettings = BuildSettingsVersion.V2;
 	}
 }
