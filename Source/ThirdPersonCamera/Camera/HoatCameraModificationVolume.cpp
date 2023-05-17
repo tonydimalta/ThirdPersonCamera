@@ -2,13 +2,6 @@
 
 #include "Camera/CameraActorInterface.h"
 
-AHoatCameraModificationVolume::AHoatCameraModificationVolume(
-    const FObjectInitializer& ObjectInitializer /*= FObjectInitializer::Get()*/)
-    : Super(ObjectInitializer)
-{
-    TransitionTime = 1.0f;
-}
-
 void AHoatCameraModificationVolume::NotifyActorBeginOverlap(AActor* Other)
 {
     Super::NotifyActorBeginOverlap(Other);

@@ -11,16 +11,14 @@ class UHoatCameraModifierApplyPitchCurves : public UCameraModifier
     GENERATED_BODY()
 
 public:
-    UHoatCameraModifierApplyPitchCurves(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
     virtual bool ModifyCamera(float DeltaTime, struct FMinimalViewInfo& InOutPOV) override;
 
 private:
     // Curve to convert changes in pitch to changes in camera distance.
-    UPROPERTY(Category = Custom, EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    UCurveFloat* PitchToDistanceCurve;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Custom, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UCurveFloat> PitchToDistanceCurve;
 
     // Curve to convert changes in pitch to changes in field of view.
-    UPROPERTY(Category = Custom, EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-    UCurveFloat* PitchToFOVCurve;
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Custom, meta = (AllowPrivateAccess = "true"))
+    TObjectPtr<UCurveFloat> PitchToFOVCurve;
 };

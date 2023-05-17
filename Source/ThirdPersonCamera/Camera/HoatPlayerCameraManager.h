@@ -11,16 +11,13 @@ class AHoatPlayerCameraManager : public APlayerCameraManager
     GENERATED_BODY()
 
 public:
-    AHoatPlayerCameraManager(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+    AHoatPlayerCameraManager();
 
     /** Radius of the query probe for verifying line of sight between camera and view target (in cm). */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-    float LineOfSightProbeSize;
+    float LineOfSightProbeSize{ 12.0f };
 
     /** Collision channel of the query probe for verifying line of sight between camera and view target. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-    TEnumAsByte<ECollisionChannel> LineOfSightProbeChannel;
-
-protected:
-    virtual void UpdateViewTarget(FTViewTarget& OutVT, float DeltaTime) override;
+    TEnumAsByte<ECollisionChannel> LineOfSightProbeChannel{ ECC_Camera };
 };

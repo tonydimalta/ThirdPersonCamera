@@ -9,12 +9,13 @@
 UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
 class UPlayerCharacterInterface : public UInterface
 {
-	GENERATED_UINTERFACE_BODY()
+	GENERATED_BODY()
 };
 
 class IPlayerCharacterInterface
 {
-	GENERATED_IINTERFACE_BODY()
+	GENERATED_BODY()
 
+public:
 	virtual bool GotMovementInput() const = 0;
 };

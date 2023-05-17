@@ -11,24 +11,21 @@ class UHoatCameraModifierFocusWalkDirection : public UHoatCameraModifier
     GENERATED_BODY()
 
 public:
-    UHoatCameraModifierFocusWalkDirection(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
     virtual bool ModifyCamera(float DeltaTime, struct FMinimalViewInfo& InOutPOV) override;
     virtual bool ProcessViewRotation(class AActor* ViewTarget, float DeltaTime, FRotator& OutViewRotation, FRotator& OutDeltaRot) override;
 
 private:
     /** Rate at which the camera should follow the turning character, in degrees per second. */
-    UPROPERTY(Category=Custom, EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-    float RotationSpeed;
+    UPROPERTY(EditDefaultsOnly, Category = Custom, meta = (AllowPrivateAccess = "true"))
+    float RotationSpeed{ 10.0f };
 
     /** Minimum time between two changes in direction of automatic camera rotation, in seconds. */
-    UPROPERTY(Category = Custom, EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-    float DirectionChangeCooldown;
+    UPROPERTY(EditDefaultsOnly, Category = Custom, meta = (AllowPrivateAccess = "true"))
+    float DirectionChangeCooldown{ 0.0f };
 
     /** Whether to always rotate the camera to focus walk direction, or only while the player is providing movement input. */
-    UPROPERTY(Category = Custom, EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-    bool RotateOnlyWhileCharacterIsMoving;
-
+    UPROPERTY(EditDefaultsOnly, Category = Custom, meta = (AllowPrivateAccess = "true"))
+    bool RotateOnlyWhileCharacterIsMoving{ false };
 
     float PreviousYawDeltaSign;
     float DirectionChangeCooldownRemaining;

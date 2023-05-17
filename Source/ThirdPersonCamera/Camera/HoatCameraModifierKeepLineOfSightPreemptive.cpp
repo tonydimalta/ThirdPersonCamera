@@ -5,18 +5,6 @@
 #include "GameFramework/Actor.h"
 #include "Camera/HoatPlayerCameraManager.h"
 
-UHoatCameraModifierKeepLineOfSightPreemptive::UHoatCameraModifierKeepLineOfSightPreemptive(
-    const FObjectInitializer& ObjectInitializer /*= FObjectInitializer::Get()*/)
-    : Super(ObjectInitializer)
-{
-    MaximumAngleInRadians = PI / 2;
-    StepSizeInRadians = 0.1f;
-
-    RotationSpeed = 1.0f;
-
-    LineOfSightProbeChannel = ECC_Camera;
-}
-
 bool UHoatCameraModifierKeepLineOfSightPreemptive::ProcessViewRotation(class AActor* ViewTarget, float DeltaTime,
                                                                        FRotator& OutViewRotation, FRotator& OutDeltaRot)
 {

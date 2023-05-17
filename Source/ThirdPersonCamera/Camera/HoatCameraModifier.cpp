@@ -5,13 +5,6 @@
 
 #include "Camera/HoatCameraSpringArmComponent.h"
 
-UHoatCameraModifier::UHoatCameraModifier(const FObjectInitializer& ObjectInitializer /*= FObjectInitializer::Get()*/)
-    : Super(ObjectInitializer),
-    CurrentModifiers(FHoatCameraInfo()),
-    TargetModifiers(FHoatCameraInfo())
-{
-}
-
 bool UHoatCameraModifier::ProcessViewRotation(class AActor* ViewTarget, float DeltaTime, FRotator& OutViewRotation, FRotator& OutDeltaRot)
 {
     Super::ProcessViewRotation(ViewTarget, DeltaTime, OutViewRotation, OutDeltaRot);

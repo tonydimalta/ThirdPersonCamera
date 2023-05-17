@@ -1,15 +1,8 @@
 #include "HoatCameraModifierApplyVolumeModifications.h"
 
 #include "Camera/CameraTypes.h"
-
 #include "Camera/CameraActorInterface.h"
 #include "Camera/HoatCameraModificationVolume.h"
-
-UHoatCameraModifierApplyVolumeModifications::UHoatCameraModifierApplyVolumeModifications(
-    const FObjectInitializer& ObjectInitializer /*= FObjectInitializer::Get()*/)
-    : Super(ObjectInitializer)
-{
-}
 
 bool UHoatCameraModifierApplyVolumeModifications::ModifyCamera(float DeltaTime, struct FMinimalViewInfo& InOutPOV)
 {

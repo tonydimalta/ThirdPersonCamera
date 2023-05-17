@@ -3,16 +3,11 @@
 #include "GameFramework/Actor.h"
 #include "Camera/PlayerCharacterInterface.h"
 
-
-UHoatCameraModifierFocusWalkDirection::UHoatCameraModifierFocusWalkDirection(const FObjectInitializer& ObjectInitializer /*= FObjectInitializer::Get()*/)
-    : Super(ObjectInitializer)
-{
-    RotationSpeed = 10.0f;
-}
+DEFINE_LOG_CATEGORY_STATIC(LogCamera, Log, All);
 
 bool UHoatCameraModifierFocusWalkDirection::ModifyCamera(float DeltaTime, struct FMinimalViewInfo& InOutPOV)
 {
-    //UE_LOG(hoat, Log, TEXT("Location: %s, Rotation: %s, FOV: %f"), *InOutPOV.Location.ToString(), *InOutPOV.Rotation.Euler().ToString(), InOutPOV.FOV);
+    UE_LOG(LogCamera, VeryVerbose, TEXT("Location: %s, Rotation: %s, FOV: %f"), *InOutPOV.Location.ToString(), *InOutPOV.Rotation.Euler().ToString(), InOutPOV.FOV);
     return Super::ModifyCamera(DeltaTime, InOutPOV);
 }
 

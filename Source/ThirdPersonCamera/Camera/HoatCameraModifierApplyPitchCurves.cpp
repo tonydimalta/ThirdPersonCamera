@@ -1,14 +1,7 @@
 #include "HoatCameraModifierApplyPitchCurves.h"
 
 #include "Camera/CameraTypes.h"
-
 #include "Camera/HoatPlayerCameraManager.h"
-
-UHoatCameraModifierApplyPitchCurves::UHoatCameraModifierApplyPitchCurves(
-    const FObjectInitializer& ObjectInitializer /*= FObjectInitializer::Get()*/)
-    : Super(ObjectInitializer)
-{
-}
 
 bool UHoatCameraModifierApplyPitchCurves::ModifyCamera(float DeltaTime, struct FMinimalViewInfo& InOutPOV)
 {

@@ -16,9 +16,12 @@ bool FHoatCameraInfo::Equals(const FHoatCameraInfo& Other) const
 
 bool FHoatCameraInfo::IsZero() const
 {
-    return FMath::Abs(FOV) < SMALL_NUMBER && FMath::Abs(SpringArmLength) < SMALL_NUMBER &&
-        FMath::Abs(DepthOfFieldFocalDistance) < SMALL_NUMBER && FMath::Abs(DepthOfFieldFocalRegion) < SMALL_NUMBER &&
+    return FMath::Abs(FOV) < SMALL_NUMBER &&
+        FMath::Abs(SpringArmLength) < SMALL_NUMBER &&
+        FMath::Abs(DepthOfFieldFocalDistance) < SMALL_NUMBER &&
+        FMath::Abs(DepthOfFieldFocalRegion) < SMALL_NUMBER &&
         FMath::Abs(DepthOfFieldNearTransitionRegion) < SMALL_NUMBER &&
         FMath::Abs(DepthOfFieldFarTransitionRegion) < SMALL_NUMBER &&
-        FMath::Abs(DepthOfFieldNearBlurSize) < SMALL_NUMBER && FMath::Abs(DepthOfFieldFarBlurSize) < SMALL_NUMBER;
+        FMath::Abs(DepthOfFieldNearBlurSize) < SMALL_NUMBER &&
+        FMath::Abs(DepthOfFieldFarBlurSize) < SMALL_NUMBER;
 }

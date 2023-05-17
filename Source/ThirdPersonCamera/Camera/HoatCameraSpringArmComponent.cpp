@@ -1,19 +1,12 @@
 #include "HoatCameraSpringArmComponent.h"
 
-#include "CollisionQueryParams.h"
-#include "Engine/World.h"
-#include "GameFramework/Pawn.h"
-
-
-UHoatCameraSpringArmComponent::UHoatCameraSpringArmComponent(
-    const FObjectInitializer& ObjectInitializer /*= FObjectInitializer::Get()*/)
-    : Super(ObjectInitializer)
+UHoatCameraSpringArmComponent::UHoatCameraSpringArmComponent()
 {
     // Enable camera controls.
     bUsePawnControlRotation = true;
 
     // Set reasonable default values for camera distance and perspective.
-    BaseTargetArmLength = 500.0f;
+    TargetArmLength = BaseTargetArmLength;
     SocketOffset = FVector(0.0f, 40.0f, 40.0f);
 
     // Enable camera lag.

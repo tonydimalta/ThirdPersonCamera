@@ -11,13 +11,14 @@ class AActor;
 UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
 class UTargetingActorInterface : public UInterface
 {
-	GENERATED_UINTERFACE_BODY()
+	GENERATED_BODY()
 };
 
 class ITargetingActorInterface
 {
-	GENERATED_IINTERFACE_BODY()
+	GENERATED_BODY()
 
+public:
 	virtual bool IsSelectingTarget() const = 0;
 	virtual AActor* GetCurrentTarget() const = 0;
 	virtual FVector2D GetCurrentTargetSelectionInput() const = 0;

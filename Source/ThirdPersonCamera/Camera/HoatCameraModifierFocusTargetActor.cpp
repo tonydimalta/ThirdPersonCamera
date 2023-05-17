@@ -6,14 +6,6 @@
 
 #include "Camera/TargetingActorInterface.h"
 
-UHoatCameraModifierFocusTargetActor::UHoatCameraModifierFocusTargetActor(
-    const FObjectInitializer& ObjectInitializer /*= FObjectInitializer::Get()*/)
-    : Super(ObjectInitializer)
-{
-    RotationSpeed = 300.0f;
-    SnapSpeed = 50.0f;
-}
-
 bool UHoatCameraModifierFocusTargetActor::ProcessViewRotation(class AActor* ViewTarget, float DeltaTime,
                                                                 FRotator& OutViewRotation, FRotator& OutDeltaRot)
 {

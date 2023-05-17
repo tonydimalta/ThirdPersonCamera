@@ -11,19 +11,17 @@ class UHoatCameraModifierFocusTargetActor : public UHoatCameraModifier
     GENERATED_BODY()
 
 public:
-	UHoatCameraModifierFocusTargetActor(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
     virtual bool ProcessViewRotation(class AActor* ViewTarget, float DeltaTime, FRotator& OutViewRotation,
                                      FRotator& OutDeltaRot) override;
 
 private:
     /** Rate at which the camera should move while not snapping to a target, in degrees per second. */
-    UPROPERTY(Category = Custom, EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-    float RotationSpeed;
+    UPROPERTY(EditDefaultsOnly, Category = Custom, meta = (AllowPrivateAccess = "true"))
+    float RotationSpeed{ 300.0f };
 
     /** Rate at which the camera should snap to the target, in degrees per second. */
-    UPROPERTY(Category = Custom, EditDefaultsOnly, meta = (AllowPrivateAccess = "true"))
-    float SnapSpeed;
+    UPROPERTY(EditDefaultsOnly, Category = Custom, meta = (AllowPrivateAccess = "true"))
+    float SnapSpeed{ 50.0f };
 
     /** Target actor that was selected at the time of the previous camera update. */
     AActor* LastTarget;

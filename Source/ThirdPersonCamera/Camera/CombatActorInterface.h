@@ -9,12 +9,13 @@
 UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
 class UCombatActorInterface : public UInterface
 {
-	GENERATED_UINTERFACE_BODY()
+	GENERATED_BODY()
 };
 
 class ICombatActorInterface
 {
-	GENERATED_IINTERFACE_BODY()
+	GENERATED_BODY()
 
+public:
 	virtual bool IsInCombat() const = 0;
 };

@@ -1,14 +1,7 @@
 #include "HoatCameraModifierInCombat.h"
 
 #include "Camera/CameraTypes.h"
-
 #include "Camera/CombatActorInterface.h"
-
-UHoatCameraModifierInCombat::UHoatCameraModifierInCombat(
-    const FObjectInitializer& ObjectInitializer /*= FObjectInitializer::Get()*/)
-    : Super(ObjectInitializer)
-{
-}
 
 bool UHoatCameraModifierInCombat::ModifyCamera(float DeltaTime, struct FMinimalViewInfo& InOutPOV)
 {

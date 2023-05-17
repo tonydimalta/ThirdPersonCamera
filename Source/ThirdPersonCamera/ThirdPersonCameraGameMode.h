@@ -12,6 +12,3 @@ class AThirdPersonCameraGameMode : public AGameModeBase
 public:
 	AThirdPersonCameraGameMode();
 };
-
-
-

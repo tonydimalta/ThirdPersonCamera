@@ -12,8 +12,6 @@ class UHoatCameraModifier : public UCameraModifier
     GENERATED_BODY()
 
 public:
-    UHoatCameraModifier(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
     virtual bool ProcessViewRotation(class AActor* ViewTarget, float DeltaTime, FRotator& OutViewRotation, FRotator& OutDeltaRot) override;
 
     /** Gets the camera modifiers that are currently being applied. */
@@ -22,10 +20,9 @@ public:
     /** Gets the camera modifiers that we are currently transitioning to. */
     FHoatCameraInfo GetTargetModifiers() const;
 
-
     /** How long to wait after player has changed the camera before automatically changing it again, in seconds. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Camera)
-    float CooldownAfterPlayerInput;
+    float CooldownAfterPlayerInput{ 1.0f };
 
 protected:
     /**
