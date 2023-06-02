@@ -11,4 +11,6 @@ class AThirdPersonCameraGameMode : public AGameModeBase
 
 public:
 	AThirdPersonCameraGameMode();
+
+	virtual void BeginPlay() override;
 };

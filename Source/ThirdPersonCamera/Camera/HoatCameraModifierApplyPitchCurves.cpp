@@ -18,23 +18,33 @@ bool UHoatCameraModifierApplyPitchCurves::ModifyCamera(float DeltaTime, struct F
     const FVector cameraLocation = InOutPOV.Location;
     const FRotator cameraRotation = InOutPOV.Rotation;
 
-    // Apply curves.
-    const float pitchToDistance = IsValid(PitchToDistanceCurve) ? PitchToDistanceCurve->GetFloatValue(cameraRotation.Pitch) : 0.0f;
-    const float pitchToFov = IsValid(PitchToFOVCurve) ? PitchToFOVCurve->GetFloatValue(cameraRotation.Pitch) : 0.0f;
+    // Apply distance curve.
+    if (bEnablePitchToDistance && IsValid(PitchToDistanceCurve))
+    {
+        // Drive camera away based on evaluated curve.
+        const float pitchToDistance = PitchToDistanceCurve->GetFloatValue(cameraRotation.Pitch);
+        const FVector actorLocation = GetViewTarget()->GetActorLocation();
+        const FVector cameraDirection = cameraRotation.RotateVector(FVector::ForwardVector);
+        const FVector desiredLocation = actorLocation - cameraDirection * pitchToDistance;
 
-    // Drive camera away based on evaluated curve.
-    const FVector desiredLocation =
-        cameraLocation - cameraRotation.RotateVector(FVector::ForwardVector) * pitchToDistance;
+        FVector newLocation;
+        FCollisionQueryParams queryParams(SCENE_QUERY_STAT(SpringArm), false, GetViewTarget());
+        FHitResult result;
+        GetWorld()->SweepSingleByChannel(result, actorLocation, desiredLocation, FQuat::Identity,
+            cameraManager->LineOfSightProbeChannel,
+            FCollisionShape::MakeSphere(cameraManager->LineOfSightProbeSize), queryParams);
+        newLocation = result.bBlockingHit ? result.Location : desiredLocation;
 
-    FVector newLocation;
-    FCollisionQueryParams queryParams(SCENE_QUERY_STAT(SpringArm), false, GetViewTarget());
-    FHitResult result;
-    GetWorld()->SweepSingleByChannel(result, GetViewTarget()->GetActorLocation(), desiredLocation, FQuat::Identity,
-                                     cameraManager->LineOfSightProbeChannel,
-                                     FCollisionShape::MakeSphere(cameraManager->LineOfSightProbeSize), queryParams);
-    newLocation = result.bBlockingHit ? result.Location : desiredLocation;
+        // Note that changing the location will override any change made in the spring arm (or other modifiers).
+        InOutPOV.Location = newLocation;
+    }
 
-    InOutPOV.Location = newLocation;
-    InOutPOV.FOV += pitchToFov;
+    // Apply FOV curve.
+    if (bEnablePitchToFOV && IsValid(PitchToFOVCurve))
+    {
+        const float pitchToFov = PitchToFOVCurve->GetFloatValue(cameraRotation.Pitch);
+        InOutPOV.FOV += pitchToFov;
+    }
+
     return false;
 }
